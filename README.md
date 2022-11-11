@@ -1,7 +1,7 @@
 
 # RoboSafe v1.0
 
-It is a simple yet effective wirelessly controled Locker using an Arduino UNO. It uses Bluetooth and RIFD card to unlock.
+A simple yet effective wireless controlled Locker using an Arduino UNO. It can be unlocked via Bluetooth and RIFD card.
 
 
 
@@ -72,6 +72,14 @@ SDA - A4
 VCC - 5v
 
 GND - GND
+
+Relay:
+
+Relay (Red1) - Battery +ve
+
+Relay (Middle) - Lock -ve
+
+Lock (+ve) - Battery +ve
 
 
 ## Authors
