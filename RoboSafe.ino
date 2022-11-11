@@ -97,6 +97,11 @@ String messageBuffer = "";
 
 void loop() {
   //rfid
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(" RoboSafe    v1.0"); 
+  display.display();
   getID(mfrc522.uid.uidByte, mfrc522.uid.size);
   if (nkey==orgkey){
     Serial.print("Key Matched!");
