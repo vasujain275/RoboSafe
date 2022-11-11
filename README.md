@@ -73,6 +73,14 @@ VCC - 5v
 
 GND - GND
 
+Relay:
+
+Relay (Red1) - Battery +ve
+
+Relay (Middle) - Lock -ve
+
+Lock (+ve) - Battery +ve
+
 
 ## Authors
 
