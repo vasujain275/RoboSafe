@@ -62,9 +62,13 @@ Red Light - D4
 Buzzer - D6
 
 OLED Display:
+
 SCL - A5
+
 SDA - A4
+
 VCC - 5v
+
 GND - GND
 
 
