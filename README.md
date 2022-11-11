@@ -61,6 +61,8 @@ Red Light - D4
 
 Buzzer - D6
 
+LockPin - D8
+
 OLED Display:
 
 SCL - A5

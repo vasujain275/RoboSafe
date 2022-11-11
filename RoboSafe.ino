@@ -4,7 +4,8 @@
 #include <MFRC522.h>
 #include <EEPROM.h>
 #include <Wire.h>
-#include <LiquidCrystal.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 const byte rxPin = 2;
 const byte txPin = 3;
@@ -27,8 +28,8 @@ String nkey = "";
 MFRC522 mfrc522(pinSS, pinRST);  // Create MFRC522 instance
 MFRC522::MIFARE_Key key;  
 
-// initialize the library with the numbers of the interface pins
-//LiquidCrystal lcd(0x3F,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line 
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
 
 int getID(byte *buffer, byte bufferSize) {
   String read_rfid="";
@@ -73,12 +74,16 @@ void setup() {
     successRead = getID(mfrc522.uid.uidByte, mfrc522.uid.size);
   } while (!successRead);
 
-  // {
-  // lcd.init();  //initialize the lcd
-  // lcd.backlight();  //open the backlight  
-  // lcd.begin(16,2);
-  // }
+  // oled
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
 
+  // default text
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(" RoboSafe    v1.0");
+  display.display();
 }
 
 
@@ -98,9 +103,23 @@ void loop() {
     digitalWrite(lockPin, LOW);
     digitalWrite(gPin, HIGH);
     digitalWrite(buzzerPin, HIGH);
+
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println("   Door    Unlocked");
+    display.display();
     delay(1000);
     digitalWrite(buzzerPin, LOW);
     delay(3000);
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println(" RoboSafe    v1.0");
+    display.display();
+
     digitalWrite(gPin, LOW);
     digitalWrite(lockPin, HIGH);
     nkey="";
@@ -137,9 +156,25 @@ void loop() {
           digitalWrite(lockPin, LOW);
           digitalWrite(gPin, HIGH);
           digitalWrite(buzzerPin, HIGH);
+
+          display.clearDisplay();
+          display.setTextSize(2);
+          display.setTextColor(WHITE);
+          display.setCursor(0,0);
+          display.println("   Door    Unlocked");
+          display.display();
+
           delay(1000);
           digitalWrite(buzzerPin, LOW);
           delay(3000);
+
+          display.clearDisplay();
+          display.setTextSize(2);
+          display.setTextColor(WHITE);
+          display.setCursor(0,0);
+          display.println(" RoboSafe    v1.0");
+          display.display();
+
           digitalWrite(gPin, LOW);
           digitalWrite(lockPin, HIGH);
         }    
@@ -161,9 +196,7 @@ void loop() {
         Serial.println("message data timeout - " + messageBuffer);
         messageBuffer = "";
         waitingForStartToken = true;
-
       }
     }
   }
-
 }
