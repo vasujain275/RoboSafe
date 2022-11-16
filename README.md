@@ -61,7 +61,6 @@ Red Light - D4
 
 Buzzer - D6
 
-LockPin - D8
 
 OLED Display:
 
@@ -80,6 +79,12 @@ Relay (Red1) - Battery +ve
 Relay (Middle) - Lock -ve
 
 Lock (+ve) - Battery +ve
+
+LockPin - D8
+
+GND - GND
+
+VCC - 5v
 
 
 ## Authors
