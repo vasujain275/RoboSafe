@@ -49,7 +49,7 @@ VCC - 5v
 
 GND - GND
 
-TX - D2 (RX)
+TX - Resistor -  D2 (RX)
 
 RX - D3 (TX)
 
