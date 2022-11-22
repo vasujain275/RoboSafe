@@ -9,8 +9,8 @@
 
 const byte rxPin = 2;
 const byte txPin = 3;
-#define pinRST         9          // Configurable, see typical pin layout above
-#define pinSS          10         // Configurable, see typical pin layout above
+#define pinRST         5          // Configurable, see typical pin layout above
+#define pinSS          53         // Configurable, see typical pin layout above
 #define lockPin        8
 #define gPin           7
 #define rPin           4
