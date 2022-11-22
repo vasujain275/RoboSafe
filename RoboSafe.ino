@@ -5,6 +5,7 @@
 #include <EEPROM.h>
 #include <Wire.h>
 #include <Adafruit_Fingerprint.h>
+#include <LiquidCrystal.h>
 
 
 const byte rxPin = 2;
@@ -15,6 +16,10 @@ const byte txPin = 3;
 #define gPin           7
 #define rPin           4
 #define buzzerPin      6
+
+// LCD
+const int rs = 22, en = 24, d4 = 26, d5 = 28, d6 = 30, d7 = 32;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // RFID
 byte readCard[4];
@@ -31,9 +36,9 @@ const String lkey = "2707";
 const String ulkey = "0702";
 
 // FingerPrint
-// pin #2 is IN from sensor (GREEN wire)
-// pin #3 is OUT from arduino  (WHITE wire)
-SoftwareSerial mySerial(2, 3);
+// pin #2 is IN from sensor (Yellow wire)
+// pin #3 is OUT from arduino  (Green wire)
+SoftwareSerial mySerial(8, 9);
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
 void setup()  
@@ -80,6 +85,11 @@ void setup()
     Serial.println("Waiting for valid finger...");
       Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
   }
+
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 4);
+  // Print a message to the LCD.
+  lcd.print("hello, world!");
 }
 
 // Bluetooth
@@ -96,11 +106,6 @@ String messageBuffer = "";
 void loop()                     
 {
   // RFID Loop
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println(" RoboSafe    v1.0"); 
-  display.display();
   getID(mfrc522.uid.uidByte, mfrc522.uid.size);
   if (nkey==orgkey){
     Serial.print("Key Matched!");
@@ -179,6 +184,11 @@ void loop()
     }
   }
 
+  // set the cursor to column 0, line 1
+  // (note: line 1 is the second row, since counting begins with 0):
+  lcd.setCursor(0, 1);
+  // print the number of seconds since reset:
+  lcd.print(millis() / 1000);
 }
 
 
