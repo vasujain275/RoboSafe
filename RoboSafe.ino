@@ -6,6 +6,9 @@
 #include <Wire.h>
 #include <Adafruit_Fingerprint.h>
 
+
+const byte rxPin = 2;
+const byte txPin = 3;
 #define pinRST         9          // Configurable, see typical pin layout above
 #define pinSS          10         // Configurable, see typical pin layout above
 #define lockPin        8
@@ -21,7 +24,11 @@ String nkey = "";
 MFRC522 mfrc522(pinSS, pinRST);  // Create MFRC522 instance
 MFRC522::MIFARE_Key key;
 
-
+// Bluetooth
+SoftwareSerial BTSerial(rxPin, txPin); // RX TX
+String msg = "";
+const String lkey = "2707";
+const String ulkey = "0702";
 
 // FingerPrint
 // pin #2 is IN from sensor (GREEN wire)
@@ -36,6 +43,10 @@ void setup()
   pinMode(rPin, OUTPUT);
   pinMode(gPin, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
+  pinMode(rxPin, INPUT);
+  pinMode(txPin, OUTPUT);
+  Serial.begin(9600);
+  BTSerial.begin(9600);
 
   //rfid
 	SPI.begin();			// Init SPI bus
@@ -71,6 +82,17 @@ void setup()
   }
 }
 
+// Bluetooth
+const char START_TOKEN = '?';
+const char END_TOKEN = ';';
+const char DELIMIT_TOKEN = '&';
+const int CHAR_TIMEOUT = 20;
+
+bool waitingForStartToken = true;
+String messageBuffer = "";
+
+
+
 void loop()                     
 {
   // RFID Loop
@@ -97,6 +119,65 @@ void loop()
   getFingerprintIDez();
   delay(50);
 
+  // handle Bluetooth link
+  char nextData;
+  if (BTSerial.available()) {
+
+    // check for start of message
+    if (waitingForStartToken) {
+      do {
+        nextData = BTSerial.read();
+      } while((nextData != START_TOKEN) && BTSerial.available());
+      if (nextData == START_TOKEN) {
+        Serial.println("message start");
+        waitingForStartToken = false;
+      }
+    }
+
+    // read command
+    if (!waitingForStartToken && BTSerial.available()){
+      do {
+        nextData = BTSerial.read();
+        messageBuffer += nextData;
+      } while((nextData != END_TOKEN) && BTSerial.available());
+
+      // check if message complete
+      if (nextData == END_TOKEN) {
+        // remove last character
+        messageBuffer = messageBuffer.substring(0, messageBuffer.length() - 1);
+        Serial.println("message - " + messageBuffer);
+        msg = messageBuffer;
+        if (msg==ulkey){
+          digitalWrite(lockPin, LOW);
+          digitalWrite(gPin, HIGH);
+          digitalWrite(buzzerPin, HIGH);
+          delay(1000);
+          digitalWrite(buzzerPin, LOW);
+          delay(3000);
+          digitalWrite(gPin, LOW);
+          digitalWrite(lockPin, HIGH);
+        }    
+        else if (msg==lkey){
+              digitalWrite(lockPin, HIGH);
+              digitalWrite(rPin, HIGH);
+              digitalWrite(buzzerPin, HIGH);
+              delay(1000);
+              digitalWrite(buzzerPin, LOW);
+              delay(1000);
+              digitalWrite(rPin, LOW);
+        }
+        messageBuffer = "";
+        waitingForStartToken = true;
+      }
+
+      // check for char timeout
+      if (messageBuffer.length() > CHAR_TIMEOUT) {
+        Serial.println("message data timeout - " + messageBuffer);
+        messageBuffer = "";
+        waitingForStartToken = true;
+      }
+    }
+  }
 
 }
 
