@@ -4,8 +4,26 @@
 #include <MFRC522.h>
 #include <EEPROM.h>
 #include <Wire.h>
-// #include <Adafruit_Fingerprint.h>
+#include <Adafruit_Fingerprint.h>
 #include <LiquidCrystal.h>
+
+// Fingerprint
+
+#if (defined(__AVR__) || defined(ESP8266)) && !defined(__AVR_ATmega2560__)
+// For UNO and others without hardware serial, we must use software serial...
+// pin #2/19 is IN from sensor (GREEN/Yellow wire)
+// pin #3/18 is OUT from arduino  (WHITE/Green wire)
+// Set up the serial port to use softwareserial..
+SoftwareSerial mySerial(19, 18);
+
+#else
+// On Leonardo/M0/etc, others with hardware serial, use hardware serial!
+// #0 is green wire, #1 is white
+#define mySerial Serial1
+
+#endif
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+
 
 
 const byte rxPin = 2;
@@ -24,7 +42,9 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 // RFID
 byte readCard[4];
 int successRead;
-String orgkey = "93408390";
+String orgkey1 = "93408390";
+String orgkey2 = "33e5c294";
+
 String nkey = "";
 MFRC522 mfrc522(pinSS, pinRST);  // Create MFRC522 instance
 MFRC522::MIFARE_Key key;
@@ -35,11 +55,7 @@ String msg = "";
 const String lkey = "2707";
 const String ulkey = "0702";
 
-// FingerPrint
-// pin #2 is IN from sensor (Yellow wire)
-// pin #3 is OUT from arduino  (Green wire)
-// SoftwareSerial mySerial(8, 9);
-// Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+
 
 void setup()  
 {
@@ -50,44 +66,55 @@ void setup()
   pinMode(buzzerPin, OUTPUT);
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);
-  Serial.begin(9600);
+  //Serial.begin(9600);
   BTSerial.begin(9600);
+
+  // Fingerprint
+  finger.begin(57600);
+  delay(5);
+  if (finger.verifyPassword()) {
+    Serial.println("Found fingerprint sensor!");
+  } else {
+    Serial.println("Did not find fingerprint sensor :(");
+    while (1) { delay(1); }
+  }
+
+  Serial.println(F("Reading sensor parameters"));
+  finger.getParameters();
+  Serial.print(F("Status: 0x")); Serial.println(finger.status_reg, HEX);
+  Serial.print(F("Sys ID: 0x")); Serial.println(finger.system_id, HEX);
+  Serial.print(F("Capacity: ")); Serial.println(finger.capacity);
+  Serial.print(F("Security level: ")); Serial.println(finger.security_level);
+  Serial.print(F("Device address: ")); Serial.println(finger.device_addr, HEX);
+  Serial.print(F("Packet len: ")); Serial.println(finger.packet_len);
+  Serial.print(F("Baud rate: ")); Serial.println(finger.baud_rate);
+
+  finger.getTemplateCount();
+
+  if (finger.templateCount == 0) {
+    Serial.print("Sensor doesn't contain any fingerprint data. Please run the 'enroll' example.");
+  }
+  else {
+    Serial.println("Waiting for valid finger...");
+      Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
+  }
+
+  
 
   //rfid
 	SPI.begin();			// Init SPI bus
 	mfrc522.PCD_Init();		// Init MFRC522
 	delay(4);				// Optional delay. Some board do need more time after init to be ready, see Readme
-	Serial.println("RFID reading.............");
-  pinMode(lockPin, OUTPUT);
+	//Serial.println("RFID reading.............");
   do{
     successRead = getID(mfrc522.uid.uidByte, mfrc522.uid.size);
   } while (!successRead);
 
-  // FingerPrint
-  // Serial.begin(9600);
-  // // while (!Serial);  // For Yun/Leo/Micro/Zero/...
-  // delay(100);
-  // Serial.println("\n\nAdafruit finger detect test");
-  // // set the data rate for the sensor serial port
-  // finger.begin(57600);
-  // delay(5);
-  // if (finger.verifyPassword()) {
-  //   Serial.println("Found fingerprint sensor!");
-  // } else {
-  //   Serial.println("Did not find fingerprint sensor :(");
-  //   while (1) { delay(1); }
-  // }
-  // finger.getTemplateCount();
-  //   if (finger.templateCount == 0) {
-  //   Serial.print("Sensor doesn't contain any fingerprint data. Please run the 'enroll' example.");
-  // } 
-  // else {
-  //   Serial.println("Waiting for valid finger...");
-  //     Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
-  // }
+  
 
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 4);
+  lcd.setCursor(4, 0);
   // Print a message to the LCD.
   lcd.print("hello, world!");
 }
@@ -105,24 +132,24 @@ String messageBuffer = "";
 
 void loop()                     
 {
+  // Fingerprint loop
+  getFingerprintID();
+  delay(100);      
+
   // RFID Loop
   getID(mfrc522.uid.uidByte, mfrc522.uid.size);
-  if (nkey==orgkey){
-    Serial.print("Key Matched!");
-    digitalWrite(lockPin, LOW);
-    digitalWrite(gPin, HIGH);
-    digitalWrite(buzzerPin, HIGH);
-    delay(1000);
-    digitalWrite(buzzerPin, LOW);
-    delay(3000);
-    digitalWrite(gPin, LOW);
-    digitalWrite(lockPin, HIGH);
+  if (nkey==orgkey1 || nkey==orgkey2){
+    //Serial.print("Key Matched!");
+    //digitalWrite(lockPin, LOW);
+    //digitalWrite(gPin, HIGH);
+    //digitalWrite(buzzerPin, HIGH);
+    //delay(1000);
+    //digitalWrite(buzzerPin, LOW);
+    //delay(3000);
+    //digitalWrite(gPin, LOW);
+    //digitalWrite(lockPin, HIGH);
     nkey="";
   }
-
-  // FingerPrint Loop
-  // getFingerprintIDez();
-  // delay(50);
 
   // handle Bluetooth link
   char nextData;
@@ -153,23 +180,25 @@ void loop()
         Serial.println("message - " + messageBuffer);
         msg = messageBuffer;
         if (msg==ulkey){
-          digitalWrite(lockPin, LOW);
-          digitalWrite(gPin, HIGH);
-          digitalWrite(buzzerPin, HIGH);
-          delay(1000);
-          digitalWrite(buzzerPin, LOW);
-          delay(3000);
-          digitalWrite(gPin, LOW);
-          digitalWrite(lockPin, HIGH);
+          // digitalWrite(lockPin, LOW);
+          // digitalWrite(gPin, HIGH);
+          // digitalWrite(buzzerPin, HIGH);
+          // delay(1000);
+          // digitalWrite(buzzerPin, LOW);
+          // delay(3000);
+          // digitalWrite(gPin, LOW);
+          // digitalWrite(lockPin, HIGH);
+          Serial.print("Unlocked via Bluetooth");  
         }    
         else if (msg==lkey){
-              digitalWrite(lockPin, HIGH);
-              digitalWrite(rPin, HIGH);
-              digitalWrite(buzzerPin, HIGH);
-              delay(1000);
-              digitalWrite(buzzerPin, LOW);
-              delay(1000);
-              digitalWrite(rPin, LOW);
+              // digitalWrite(lockPin, HIGH);
+              // digitalWrite(rPin, HIGH);
+              // digitalWrite(buzzerPin, HIGH);
+              // delay(1000);
+              // digitalWrite(buzzerPin, LOW);
+              // delay(1000);
+              // digitalWrite(rPin, LOW);
+              Serial.print("Locked via Bluetooth");  
         }
         messageBuffer = "";
         waitingForStartToken = true;
@@ -208,90 +237,91 @@ int getID(byte *buffer, byte bufferSize) {
     for (byte i = 0; i < bufferSize; i++) {
         read_rfid=read_rfid + String(buffer[i], HEX);
     }
-  Serial.println(read_rfid);
+  //Serial.println(read_rfid);
   nkey = read_rfid;
   return;
 }
 
+// Fingerprint Function
+uint8_t getFingerprintID() {
+  uint8_t p = finger.getImage();
+  switch (p) {
+    case FINGERPRINT_OK:
+      Serial.println("Image taken");
+      break;
+    case FINGERPRINT_NOFINGER:
+      Serial.println("No finger detected");
+      return p;
+    case FINGERPRINT_PACKETRECIEVEERR:
+      Serial.println("Communication error");
+      return p;
+    case FINGERPRINT_IMAGEFAIL:
+      Serial.println("Imaging error");
+      return p;
+    default:
+      Serial.println("Unknown error");
+      return p;
+  }
 
-// FingerPrint Functions
-// uint8_t getFingerprintID() {
-//   uint8_t p = finger.getImage();
-//   switch (p) {
-//     case FINGERPRINT_OK:
-//       Serial.println("Image taken");
-//       break;
-//     case FINGERPRINT_NOFINGER:
-//       Serial.println("No finger detected");
-//       return p;
-//     case FINGERPRINT_PACKETRECIEVEERR:
-//       Serial.println("Communication error");
-//       return p;
-//     case FINGERPRINT_IMAGEFAIL:
-//       Serial.println("Imaging error");
-//       return p;
-//     default:
-//       Serial.println("Unknown error");
-//       return p;
-//   }
+  // OK success!
 
-//   // OK success!
+  p = finger.image2Tz();
+  switch (p) {
+    case FINGERPRINT_OK:
+      Serial.println("Image converted");
+      break;
+    case FINGERPRINT_IMAGEMESS:
+      Serial.println("Image too messy");
+      return p;
+    case FINGERPRINT_PACKETRECIEVEERR:
+      Serial.println("Communication error");
+      return p;
+    case FINGERPRINT_FEATUREFAIL:
+      Serial.println("Could not find fingerprint features");
+      return p;
+    case FINGERPRINT_INVALIDIMAGE:
+      Serial.println("Could not find fingerprint features");
+      return p;
+    default:
+      Serial.println("Unknown error");
+      return p;
+  }
 
-//   p = finger.image2Tz();
-//   switch (p) {
-//     case FINGERPRINT_OK:
-//       Serial.println("Image converted");
-//       break;
-//     case FINGERPRINT_IMAGEMESS:
-//       Serial.println("Image too messy");
-//       return p;
-//     case FINGERPRINT_PACKETRECIEVEERR:
-//       Serial.println("Communication error");
-//       return p;
-//     case FINGERPRINT_FEATUREFAIL:
-//       Serial.println("Could not find fingerprint features");
-//       return p;
-//     case FINGERPRINT_INVALIDIMAGE:
-//       Serial.println("Could not find fingerprint features");
-//       return p;
-//     default:
-//       Serial.println("Unknown error");
-//       return p;
-//   }
-  
-//   // OK converted!
-//   p = finger.fingerFastSearch();
-//   if (p == FINGERPRINT_OK) {
-//     Serial.println("Found a print match!");
-//   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-//     Serial.println("Communication error");
-//     return p;
-//   } else if (p == FINGERPRINT_NOTFOUND) {
-//     Serial.println("Did not find a match");
-//     return p;
-//   } else {
-//     Serial.println("Unknown error");
-//     return p;
-//   }   
-  
-//   // found a match!
-//   Serial.print("Found ID #"); Serial.print(finger.fingerID); 
-//   Serial.print(" with confidence of "); Serial.println(finger.confidence); 
+  // OK converted!
+  p = finger.fingerSearch();
+  if (p == FINGERPRINT_OK) {
+    Serial.println("Found a print match!");
+  } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+    Serial.println("Communication error");
+    return p;
+  } else if (p == FINGERPRINT_NOTFOUND) {
+    Serial.println("Did not find a match");
+    return p;
+  } else {
+    Serial.println("Unknown error");
+    return p;
+  }
 
-//   return finger.fingerID;
-// }
-// int getFingerprintIDez() {
-//   uint8_t p = finger.getImage();
-//   if (p != FINGERPRINT_OK)  return -1;
+  // found a match!
+  Serial.print("Found ID #"); Serial.print(finger.fingerID);
+  Serial.print(" with confidence of "); Serial.println(finger.confidence);
 
-//   p = finger.image2Tz();
-//   if (p != FINGERPRINT_OK)  return -1;
+  return finger.fingerID;
+}
+// returns -1 if failed, otherwise returns ID #
+int getFingerprintIDez() {
+  uint8_t p = finger.getImage();
+  if (p != FINGERPRINT_OK)  return -1;
 
-//   p = finger.fingerFastSearch();
-//   if (p != FINGERPRINT_OK)  return -1;
-  
-//   // found a match!
-//   Serial.print("Found ID #"); Serial.print(finger.fingerID); 
-//   Serial.print(" with confidence of "); Serial.println(finger.confidence);
-//   return finger.fingerID; 
-// }
+  p = finger.image2Tz();
+  if (p != FINGERPRINT_OK)  return -1;
+
+  p = finger.fingerFastSearch();
+  if (p != FINGERPRINT_OK)  return -1;
+
+  // found a match!
+  Serial.print("Found ID #"); Serial.print(finger.fingerID);
+  Serial.print(" with confidence of "); Serial.println(finger.confidence);
+  return finger.fingerID;
+}
+
