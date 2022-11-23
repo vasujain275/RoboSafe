@@ -43,11 +43,9 @@ RX - D3 (TX)
 
 Relay:
 
-Relay (NO) - Loc
+Relay (NO) - Lock (+ve)
 
 Relay (COM) - Adaptor +ve
-
-Realy (NC) - Battery +ve
 
 Lock (-ve) - Adaptor -ve
 
@@ -56,3 +54,25 @@ IN - D8
 GND - GND
 
 VCC - 5v
+
+OLED Display:
+
+SCL - A5
+
+SDA - A4
+
+VCC - 5v
+
+GND - GND
+
+Others:
+
+Green Light - D7
+
+Red Light - D4
+
+Buzzer - D6
+
+## Authors
+
+- [@vasujain2](https://github.com/vasujain2)

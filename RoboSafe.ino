@@ -32,6 +32,8 @@ const byte txPin = 3;
 #define gPin           7
 #define rPin           4
 #define buzzerPin      6
+#define delay1         1000
+#define delay2         3000
 
 // Oled 
 #define OLED_RESET 4
@@ -151,9 +153,9 @@ void loop()
     display.setCursor(0,0);
     display.println("   Door    Unlocked");
     display.display();
-    delay(1000);
+    delay(delay1);
     digitalWrite(buzzerPin, LOW);
-    delay(3000);
+    delay(delay2);
     display.clearDisplay();
     display.setTextSize(2);
     display.setTextColor(WHITE);
@@ -178,9 +180,9 @@ void loop()
     display.setCursor(0,0);
     display.println("   Door    Unlocked");
     display.display();
-    delay(1000);
+    delay(delay1);
     digitalWrite(buzzerPin, LOW);
-    delay(3000);
+    delay(delay2);
     display.clearDisplay();
     display.setTextSize(2);
     display.setTextColor(WHITE);
@@ -231,9 +233,9 @@ void loop()
           display.setCursor(0,0);
           display.println("   Door    Unlocked");
           display.display();
-          delay(1000);
+          delay(delay1);
           digitalWrite(buzzerPin, LOW);
-          delay(3000);
+          delay(delay2);
           display.clearDisplay();
           display.setTextSize(2);
           display.setTextColor(WHITE);
@@ -254,9 +256,9 @@ void loop()
                 display.setCursor(0,0);
                 display.println("   Door    Unlocked");
                 display.display();
-                delay(1000);
+                delay(delay1);
                 digitalWrite(buzzerPin, LOW);
-                delay(3000);
+                delay(delay2);
                 display.clearDisplay();
                 display.setTextSize(2);
                 display.setTextColor(WHITE);
