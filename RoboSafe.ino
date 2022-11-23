@@ -133,8 +133,13 @@ String messageBuffer = "";
 void loop()                     
 {
   // Fingerprint loop
-  getFingerprintID();
-  delay(100);      
+  if ( getFingerPrint() != -1)
+  {
+    digitalWrite(lockPin, HIGH);
+    delay(3000);
+    digitalWrite(lockPin, LOW);   
+  }  
+  delay(50);     
 
   // RFID Loop
   getID(mfrc522.uid.uidByte, mfrc522.uid.size);
