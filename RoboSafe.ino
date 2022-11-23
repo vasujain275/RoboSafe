@@ -5,22 +5,20 @@
 #include <EEPROM.h>
 #include <Wire.h>
 #include <Adafruit_Fingerprint.h>
-#include <LiquidCrystal.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // Fingerprint
-
 #if (defined(__AVR__) || defined(ESP8266)) && !defined(__AVR_ATmega2560__)
 // For UNO and others without hardware serial, we must use software serial...
 // pin #2/19 is IN from sensor (GREEN/Yellow wire)
 // pin #3/18 is OUT from arduino  (WHITE/Green wire)
 // Set up the serial port to use softwareserial..
 SoftwareSerial mySerial(19, 18);
-
 #else
 // On Leonardo/M0/etc, others with hardware serial, use hardware serial!
 // #0 is green wire, #1 is white
 #define mySerial Serial1
-
 #endif
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
@@ -35,9 +33,9 @@ const byte txPin = 3;
 #define rPin           4
 #define buzzerPin      6
 
-// LCD
-const int rs = 22, en = 24, d4 = 26, d5 = 28, d6 = 30, d7 = 32;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+// Oled 
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
 
 // RFID
 byte readCard[4];
@@ -66,8 +64,17 @@ void setup()
   pinMode(buzzerPin, OUTPUT);
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);
-  //Serial.begin(9600);
+  Serial.begin(9600);
   BTSerial.begin(9600);
+
+  // oled
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(" RoboSafe    v2.0");
+  display.display();
 
   // Fingerprint
   finger.begin(57600);
@@ -78,7 +85,6 @@ void setup()
     Serial.println("Did not find fingerprint sensor :(");
     while (1) { delay(1); }
   }
-
   Serial.println(F("Reading sensor parameters"));
   finger.getParameters();
   Serial.print(F("Status: 0x")); Serial.println(finger.status_reg, HEX);
@@ -88,9 +94,7 @@ void setup()
   Serial.print(F("Device address: ")); Serial.println(finger.device_addr, HEX);
   Serial.print(F("Packet len: ")); Serial.println(finger.packet_len);
   Serial.print(F("Baud rate: ")); Serial.println(finger.baud_rate);
-
   finger.getTemplateCount();
-
   if (finger.templateCount == 0) {
     Serial.print("Sensor doesn't contain any fingerprint data. Please run the 'enroll' example.");
   }
@@ -112,11 +116,6 @@ void setup()
 
   
 
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 4);
-  lcd.setCursor(4, 0);
-  // Print a message to the LCD.
-  lcd.print("hello, world!");
 }
 
 // Bluetooth
@@ -132,27 +131,64 @@ String messageBuffer = "";
 
 void loop()                     
 {
+  // Oled
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(" RoboSafe    v2.0"); 
+  display.display();
+
   // Fingerprint loop
   if ( getFingerPrint() != -1) 
   {
-    digitalWrite(lockPin, HIGH);
+    Serial.print("Key Matched!");
+    digitalWrite(lockPin, LOW);
+    digitalWrite(gPin, HIGH);
+    digitalWrite(buzzerPin, HIGH);
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println("   Door    Unlocked");
+    display.display();
+    delay(1000);
+    digitalWrite(buzzerPin, LOW);
     delay(3000);
-    digitalWrite(lockPin, LOW);   
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println(" RoboSafe    v2.0");
+    display.display();
+    digitalWrite(gPin, LOW);
+    digitalWrite(lockPin, HIGH);
   }  
   delay(50);     
 
   // RFID Loop
   getID(mfrc522.uid.uidByte, mfrc522.uid.size);
   if (nkey==orgkey1 || nkey==orgkey2){
-    //Serial.print("Key Matched!");
-    //digitalWrite(lockPin, LOW);
-    //digitalWrite(gPin, HIGH);
-    //digitalWrite(buzzerPin, HIGH);
-    //delay(1000);
-    //digitalWrite(buzzerPin, LOW);
-    //delay(3000);
-    //digitalWrite(gPin, LOW);
-    //digitalWrite(lockPin, HIGH);
+    Serial.print("Key Matched!");
+    digitalWrite(lockPin, LOW);
+    digitalWrite(gPin, HIGH);
+    digitalWrite(buzzerPin, HIGH);
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println("   Door    Unlocked");
+    display.display();
+    delay(1000);
+    digitalWrite(buzzerPin, LOW);
+    delay(3000);
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println(" RoboSafe    v2.0");
+    display.display();
+    digitalWrite(gPin, LOW);
+    digitalWrite(lockPin, HIGH);
     nkey="";
   }
 
@@ -185,25 +221,50 @@ void loop()
         Serial.println("message - " + messageBuffer);
         msg = messageBuffer;
         if (msg==ulkey){
-          // digitalWrite(lockPin, LOW);
-          // digitalWrite(gPin, HIGH);
-          // digitalWrite(buzzerPin, HIGH);
-          // delay(1000);
-          // digitalWrite(buzzerPin, LOW);
-          // delay(3000);
-          // digitalWrite(gPin, LOW);
-          // digitalWrite(lockPin, HIGH);
-          Serial.print("Unlocked via Bluetooth");  
+          Serial.print("Key Matched!");
+          digitalWrite(lockPin, LOW);
+          digitalWrite(gPin, HIGH);
+          digitalWrite(buzzerPin, HIGH);
+          display.clearDisplay();
+          display.setTextSize(2);
+          display.setTextColor(WHITE);
+          display.setCursor(0,0);
+          display.println("   Door    Unlocked");
+          display.display();
+          delay(1000);
+          digitalWrite(buzzerPin, LOW);
+          delay(3000);
+          display.clearDisplay();
+          display.setTextSize(2);
+          display.setTextColor(WHITE);
+          display.setCursor(0,0);
+          display.println(" RoboSafe    v2.0");
+          display.display();
+          digitalWrite(gPin, LOW);
+          digitalWrite(lockPin, HIGH); 
         }    
         else if (msg==lkey){
-              // digitalWrite(lockPin, HIGH);
-              // digitalWrite(rPin, HIGH);
-              // digitalWrite(buzzerPin, HIGH);
-              // delay(1000);
-              // digitalWrite(buzzerPin, LOW);
-              // delay(1000);
-              // digitalWrite(rPin, LOW);
-              Serial.print("Locked via Bluetooth");  
+                Serial.print("Key Matched!");
+                digitalWrite(lockPin, LOW);
+                digitalWrite(gPin, HIGH);
+                digitalWrite(buzzerPin, HIGH);
+                display.clearDisplay();
+                display.setTextSize(2);
+                display.setTextColor(WHITE);
+                display.setCursor(0,0);
+                display.println("   Door    Unlocked");
+                display.display();
+                delay(1000);
+                digitalWrite(buzzerPin, LOW);
+                delay(3000);
+                display.clearDisplay();
+                display.setTextSize(2);
+                display.setTextColor(WHITE);
+                display.setCursor(0,0);
+                display.println(" RoboSafe    v2.0");
+                display.display();
+                digitalWrite(gPin, LOW);
+                digitalWrite(lockPin, HIGH);
         }
         messageBuffer = "";
         waitingForStartToken = true;
@@ -217,17 +278,10 @@ void loop()
       }
     }
   }
-
-  // set the cursor to column 0, line 1
-  // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 1);
-  // print the number of seconds since reset:
-  lcd.print(millis() / 1000);
 }
 
 
 // RFID Function
-
 int getID(byte *buffer, byte bufferSize) {
   String read_rfid="";
   if (!mfrc522.PICC_IsNewCardPresent())
@@ -246,6 +300,7 @@ int getID(byte *buffer, byte bufferSize) {
   nkey = read_rfid;
   return;
 }
+
 
 // Fingerprint Function
 uint8_t getFingerprintID() {
@@ -329,4 +384,3 @@ int getFingerprintIDez() {
   Serial.print(" with confidence of "); Serial.println(finger.confidence);
   return finger.fingerID;
 }
-
