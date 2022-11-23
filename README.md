@@ -1,7 +1,7 @@
 
 # RoboSafe v2.0
 
-A simple yet effective wireless controlled Locker using an Arduino Mega. It can be unlocked via App RIFD card, Fingerprint.
+A simple yet effective wireless controlled Locker using an Arduino Mega. It can be unlocked via App RIFD card, Fingerprint and stream live footage to your device.
 
 ## Materials Required
 
