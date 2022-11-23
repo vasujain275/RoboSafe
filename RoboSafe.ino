@@ -133,7 +133,7 @@ String messageBuffer = "";
 void loop()                     
 {
   // Fingerprint loop
-  if ( getFingerPrint() != -1)
+  if ( getFingerPrint() != -1) 
   {
     digitalWrite(lockPin, HIGH);
     delay(3000);
