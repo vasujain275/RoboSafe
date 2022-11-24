@@ -28,9 +28,9 @@ const byte rxPin = 2;
 const byte txPin = 3;
 #define pinRST         5          // Configurable, see typical pin layout above
 #define pinSS          53         // Configurable, see typical pin layout above
-#define lockPin        8
-#define gPin           7
-#define rPin           4
+#define lockPin        7
+#define gPin           35
+#define rPin           37
 #define buzzerPin      6
 #define delay1         1000
 #define delay2         3000

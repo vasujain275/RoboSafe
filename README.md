@@ -49,7 +49,7 @@ Relay (COM) - Adaptor +ve
 
 Lock (-ve) - Adaptor -ve
 
-IN - D8
+IN - D7
 
 GND - GND
 
@@ -67,9 +67,9 @@ GND - GND
 
 Others:
 
-Green Light - D7
+Green Light - D35
 
-Red Light - D4
+Red Light - D37
 
 Buzzer - D6
 
