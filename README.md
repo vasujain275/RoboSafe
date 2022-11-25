@@ -57,9 +57,9 @@ VCC - 5v
 
 OLED Display:
 
-SCL - A5
+SCL - A21
 
-SDA - A4
+SDA - A20
 
 VCC - 5v
 
