@@ -21,7 +21,7 @@ VCC - Pin 3.3v
 
 GND - GND
 
-Reset (RST) - Pin D5
+Reset (RST) - Pin D49
 
 SDA(SS) - Pin D53
 
