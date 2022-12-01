@@ -25,14 +25,12 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
 
 
-const byte rxPin = 3; 
-const byte txPin = 2;
 #define pinRST         49         // Configurable, see typical pin layout above
 #define pinSS          53         // Configurable, see typical pin layout above
 #define lockPin        7
 #define gPin           35
 #define rPin           37
-#define buzzerPin      6
+#define buzzerPin      22
 #define delay1         1000
 #define delay2         3000
 
@@ -50,7 +48,7 @@ MFRC522 mfrc522(pinSS, pinRST);  // Create MFRC522 instance
 MFRC522::MIFARE_Key key;
 
 // Bluetooth
-SoftwareSerial BTSerial(rxPin, txPin); // RX TX
+SoftwareSerial BTSerial(2, 3); // RX TX
 String msg = "";
 const String lkey = "2707";
 const String ulkey = "0702";
@@ -64,8 +62,8 @@ void setup()
   pinMode(rPin, OUTPUT);
   pinMode(gPin, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
-  pinMode(rxPin, INPUT);
-  pinMode(txPin, OUTPUT);
+  // pinMode(rxPin, INPUT);
+  // pinMode(txPin, OUTPUT);
   Serial.begin(9600);
   BTSerial.begin(9600);
 
@@ -81,30 +79,6 @@ void setup()
   // Fingerprint
   finger.begin(57600);
   delay(5);
-  // if (finger.verifyPassword()) {
-  //   Serial.println("Found fingerprint sensor!");
-  // } else {
-  //   Serial.println("Did not find fingerprint sensor :(");
-  //   while (1) { delay(1); }
-  // }
-  // Serial.println(F("Reading sensor parameters"));
-  // finger.getParameters();
-  // Serial.print(F("Status: 0x")); Serial.println(finger.status_reg, HEX);
-  // Serial.print(F("Sys ID: 0x")); Serial.println(finger.system_id, HEX);
-  // Serial.print(F("Capacity: ")); Serial.println(finger.capacity);
-  // Serial.print(F("Security level: ")); Serial.println(finger.security_level);
-  // Serial.print(F("Device address: ")); Serial.println(finger.device_addr, HEX);
-  // Serial.print(F("Packet len: ")); Serial.println(finger.packet_len);
-  // Serial.print(F("Baud rate: ")); Serial.println(finger.baud_rate);
-  // finger.getTemplateCount();
-  // if (finger.templateCount == 0) {
-  //   Serial.print("Sensor doesn't contain any fingerprint data. Please run the 'enroll' example.");
-  // }
-  // else {
-  //   Serial.println("Waiting for valid finger...");
-  //     Serial.print("Sensor contains "); Serial.print(finger.templateCount); Serial.println(" templates");
-  // }
-
   
   //rfid
 	SPI.begin();			// Init SPI bus
