@@ -8,18 +8,20 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+#define mySerial Serial3
+#define BTSerial Serial1
 
 // Fingerprint
 #if (defined(__AVR__) || defined(ESP8266)) && !defined(__AVR_ATmega2560__)
 // For UNO and others without hardware serial, we must use software serial...
-// pin #2/19 is IN from sensor (GREEN/Yellow wire)
-// pin #3/18 is OUT from arduino  (WHITE/Green wire)
+// pin #2/19 is IN from sensor (GREEN/Yellow wire) (RX)
+// pin #3/18 is OUT from arduino  (WHITE/Green wire) (TX)
 // Set up the serial port to use softwareserial..
-SoftwareSerial mySerial(19, 18);
+SoftwareSerial mySerial(15, 14);
 #else
+
 // On Leonardo/M0/etc, others with hardware serial, use hardware serial!
 // #0 is green wire, #1 is white
-#define mySerial Serial1
 #endif
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
@@ -47,13 +49,10 @@ String nkey = "";
 MFRC522 mfrc522(pinSS, pinRST);  // Create MFRC522 instance
 MFRC522::MIFARE_Key key;
 
-// Bluetooth
-SoftwareSerial BTSerial(2, 3); // RX TX
+// Bluethooth
 String msg = "";
 const String lkey = "2707";
 const String ulkey = "0702";
-
-
 
 void setup()  
 {
@@ -62,8 +61,6 @@ void setup()
   pinMode(rPin, OUTPUT);
   pinMode(gPin, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
-  // pinMode(rxPin, INPUT);
-  // pinMode(txPin, OUTPUT);
   Serial.begin(9600);
   BTSerial.begin(9600);
 
