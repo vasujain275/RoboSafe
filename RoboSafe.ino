@@ -213,18 +213,17 @@ void loop()
           display.println(" RoboSafe    v2.0");
           display.display();
           digitalWrite(gPin, LOW);
-          digitalWrite(lockPin, HIGH); 
         }    
         else if (msg==lkey){
                 Serial.print("Key Matched!");
-                digitalWrite(lockPin, LOW);
+                digitalWrite(lockPin, HIGH);
                 digitalWrite(gPin, HIGH);
                 digitalWrite(buzzerPin, HIGH);
                 display.clearDisplay();
                 display.setTextSize(2);
                 display.setTextColor(WHITE);
                 display.setCursor(0,0);
-                display.println("   Door    Unlocked");
+                display.println("   Door    Locked  ");
                 display.display();
                 delay(delay1);
                 digitalWrite(buzzerPin, LOW);
@@ -236,7 +235,6 @@ void loop()
                 display.println(" RoboSafe    v2.0");
                 display.display();
                 digitalWrite(gPin, LOW);
-                digitalWrite(lockPin, HIGH);
         }
         messageBuffer = "";
         waitingForStartToken = true;
