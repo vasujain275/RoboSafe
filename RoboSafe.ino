@@ -30,8 +30,8 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 #define pinRST         43         // Configurable, see typical pin layout above
 #define pinSS          53         // Configurable, see typical pin layout above
 #define lockPin        24
-#define gPin           35
-#define rPin           37
+#define gPin           36
+#define rPin           28
 #define buzzerPin      22
 #define delay1         1000
 #define delay2         3000
