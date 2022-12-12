@@ -64,6 +64,8 @@ void setup()
   Serial.begin(9600);
   BTSerial.begin(9600);
 
+  digitalWrite(lockPin, HIGH);
+
   // oled
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
