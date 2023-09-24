@@ -28,8 +28,9 @@ Here are some images of the final project:
 
 And here are some demonstration videos of the project:
 
-- [Watch Video 1](media/05.mp4)
-- [Watch Video 2](media/08.mp4)
+- [Watch Video 1](https://youtube.com/shorts/sdpYSFQem0w)
+- [Watch Video 2](https://youtube.com/shorts/omGN13xZLuQ)
+
 
 ## Materials Required
 
